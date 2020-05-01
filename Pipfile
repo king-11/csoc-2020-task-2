@@ -4,6 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pylint = "*"
+autopep8 = "*"
 
 [packages]
 certifi = "==2019.3.9"
@@ -14,4 +16,4 @@ gunicorn = "*"
 django-heroku = "*"
 
 [requires]
-python_version = "3.8"
+python_full_version = "3.7.7"
