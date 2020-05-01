@@ -4,21 +4,27 @@ from store.models import *
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 # Create your views here.
+
 
 def index(request):
     return render(request, 'store/index.html')
 
+
 def bookDetailView(request, bid):
     template_name = 'store/book_detail.html'
     context = {
-        'book': None, # set this to an instance of the required book
-        'num_available': None, # set this to the number of copies of the book available, or 0 if the book isn't available
+        'book': None,
+        'num_available': None,
     }
-    # START YOUR CODE HERE
-    
-    
+
+    book = get_object_or_404(Book, pk=bid)
+    context['book'] = book
+    context['num_available'] = len(BookCopy.objects.filter(
+        book=book, status=True))
+
     return render(request, template_name, context=context)
 
 
@@ -26,14 +32,19 @@ def bookDetailView(request, bid):
 def bookListView(request):
     template_name = 'store/book_list.html'
     context = {
-        'books': None, # set this to the list of required books upon filtering using the GET parameters
-                       # (i.e. the book search feature will also be implemented in this view)
+        'books': None,
     }
     get_data = request.GET
-    # START YOUR CODE HERE
-    
-    
+
+    if get_data:
+        context['books'] = Book.objects.filter(
+            title__icontains=get_data['title'], author__icontains=get_data['author'], genre__icontains=get_data['genre']
+        )
+    else:
+        context['books'] = Book.objects.all()
+
     return render(request, template_name, context=context)
+
 
 @login_required
 def viewLoanedBooks(request):
@@ -41,15 +52,11 @@ def viewLoanedBooks(request):
     context = {
         'books': None,
     }
-    '''
-    The above key 'books' in the context dictionary should contain a list of instances of the 
-    BookCopy model. Only those book copies should be included which have been loaned by the user.
-    '''
-    # START YOUR CODE HERE
-    
-
-
+    user = request.user
+    books = BookCopy.objects.filter(borrower=user)
+    context['books'] = books
     return render(request, template_name, context=context)
+
 
 @csrf_exempt
 @login_required
@@ -57,26 +64,36 @@ def loanBookView(request):
     response_data = {
         'message': None,
     }
-    '''
-    Check if an instance of the asked book is available.
-    If yes, then set the message to 'success', otherwise 'failure'
-    '''
-    # START YOUR CODE HERE
-    book_id = None # get the book id from post data
+    bid = request.body.decode("utf-8").split("=")[1]
+    book = BookCopy.objects.get(book_id=bid, status=True)
 
-
+    if book:
+        book.borrower = request.user
+        book.borrow_date = timezone.datetime.today().date()
+        book.status = False
+        book.save()
+        response_data['message'] = 'success'
+    else:
+        response_data['message'] = 'failure'
     return JsonResponse(response_data)
 
-'''
-FILL IN THE BELOW VIEW BY YOURSELF.
-This view will return the issued book.
-You need to accept the book id as argument from a post request.
-You additionally need to complete the returnBook function in the loaned_books.html file
-to make this feature complete
-''' 
+
 @csrf_exempt
 @login_required
 def returnBookView(request):
-    pass
+    response_data = {
+        'message': None,
+    }
 
+    bid = request.body.decode("utf-8").split("=")[1]
+    book = get_object_or_404(BookCopy, pk=bid)
 
+    if book:
+        book.borrower = None
+        book.borrow_date = None
+        book.status = True
+        book.save()
+        response_data['message'] = 'success'
+    else:
+        response_data['message'] = 'failure'
+    return JsonResponse(response_data)
