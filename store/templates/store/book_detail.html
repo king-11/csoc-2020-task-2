@@ -1,10 +1,6 @@
-{% extends "store/base.html" %}
-
-{% block title %}
+{% extends "store/base.html" %} {% block title %}
 <title>{{ book.title }} | Library</title>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <h2>Title: {{ book.title }}</h2>
 
 <dl>
@@ -22,6 +18,16 @@
 	<dd>{{ num_available }}</dd>
 </dl>
 <button class="btn btn-primary" id="loan-button">Loan {{ book.title }}</button>
+{% if user.is_authenticated %}
+<form id="book" method="POST" action="{% url 'book-detail' book.pk %}">
+	{% csrf_token %}
+	<div class="form-group">
+		<label>Update Rating</label>
+		<input name="rating" type="number" min="0" max="10" value="{{user_review}}" required />
+		<button class="btn btn-primary">Submit</button>
+	</div>
+</form>
+{% endif %}
 <script>
 	$("#loan-button").click(function () {
 		$.ajax({
@@ -29,7 +35,7 @@
 			method: "POST",
 			data: {
 				bid: {{ book.id }}
-		},
+  		},
 		success: function (data, status, xhr) {
 			if (data['message'] == "success") {
 				alert("Book successfully issued");
@@ -43,7 +49,26 @@
 			alert("Some error occured");
 		}
 
-	})
-})
+  	})
+  })
+
+	// $("#book").on('submit', (e) => {
+	// 	e.preventDefault()
+	// 	console.log('kuch')
+	// 	$.ajax({
+	// 		url: {% url 'book-detail' book.pk %},
+	// 		method: "POST",
+	// 		data: {
+	// 		rating: document.querySelector('#rating').value
+	// 	},
+	// 		success: () => {
+	// 			window.location.reload()
+	// 		},
+	// 		error: function (xhr, status, err) {
+	// 			alert("Some error occured");
+	// 		}
+
+  	// 	})
+  	// })
 </script>
 {% endblock %}

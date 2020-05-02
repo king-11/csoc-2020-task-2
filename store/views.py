@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.db.models import Avg
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
@@ -14,16 +16,39 @@ def index(request):
 
 
 def bookDetailView(request, bid):
-    template_name = 'store/book_detail.html'
+    book = get_object_or_404(Book, pk=bid)
+
+    if request.method == "POST":
+        user = request.user
+        rating = request.POST['rating']
+        try:
+            changeRating = BookRating.objects.get(book=book, username=user)
+        except ObjectDoesNotExist:
+            changeRating = BookRating.objects.create(book=book, username=user)
+        finally:
+            changeRating.rating = rating
+            changeRating.save()
+
+    book.rating = BookRating.objects.filter(
+        book=book).aggregate(rating=Avg('rating'))['rating']
+
+    book.save()
+
     context = {
         'book': None,
         'num_available': None,
     }
+    if request.user.is_authenticated:
+        try:
+            context['user_review'] = BookRating.objects.get(
+                book=book, username=request.user).rating
+        except ObjectDoesNotExist:
+            context['user_review'] = None
 
-    book = get_object_or_404(Book, pk=bid)
+    context['num_available'] = BookCopy.objects.filter(
+        book=book, status=True).count()
     context['book'] = book
-    context['num_available'] = len(BookCopy.objects.filter(
-        book=book, status=True))
+    template_name = 'store/book_detail.html'
 
     return render(request, template_name, context=context)
 

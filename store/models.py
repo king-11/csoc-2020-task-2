@@ -10,8 +10,7 @@ class Book(models.Model):
     genre = models.CharField(max_length=50)
     description = models.TextField(null=True)
     mrp = models.PositiveIntegerField()
-    rating = models.IntegerField(
-        default=1, validators=[MaxValueValidator(10), MinValueValidator(0)])
+    rating = models.FloatField(default=None, null=True)
 
     class Meta:
         ordering = ('title',)
@@ -33,3 +32,13 @@ class BookCopy(models.Model):
             return f'{self.book.title}, {str(self.borrow_date)}'
         else:
             return f'{self.book.title} - Available'
+
+
+class BookRating(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    username = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(
+        default=1, validators=[MaxValueValidator(10), MinValueValidator(0)])
+
+    def __str__(self):
+        return f'{self.username} rated {self.book.title} {self.rating}'
