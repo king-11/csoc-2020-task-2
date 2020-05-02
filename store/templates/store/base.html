@@ -22,8 +22,10 @@
                 <ul class="sidebar-nav">
                     <li><a href="{% url 'index' %}">Home</a></li>
                     <li><a href="{% url 'book-list' %}">All books</a></li>
+                    {% if not user.is_authenticated %}
                     <li><a href="{% url 'login' %}">Login</a></li>
                     <li><a href="{% url 'signup' %}">Sign Up</a></li>
+                    {% endif %}
                 </ul>
 
                 <ul class="sidebar-nav">
