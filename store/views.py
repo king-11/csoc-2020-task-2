@@ -21,13 +21,10 @@ def bookDetailView(request, bid):
     if request.method == "POST":
         user = request.user
         rating = request.POST['rating']
-        try:
-            changeRating = BookRating.objects.get(book=book, username=user)
-        except ObjectDoesNotExist:
-            changeRating = BookRating.objects.create(book=book, username=user)
-        finally:
-            changeRating.rating = rating
-            changeRating.save()
+        changeRating, create = BookRating.objects.get_or_create(
+            book=book, username=user)
+        changeRating.rating = rating
+        changeRating.save()
 
     book.rating = BookRating.objects.filter(
         book=book).aggregate(rating=Avg('rating'))['rating']
