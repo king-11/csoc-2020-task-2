@@ -63,8 +63,13 @@ def bookListView(request):
         context['books'] = Book.objects.filter(
             title__icontains=get_data['title'], author__icontains=get_data['author'], genre__icontains=get_data['genre']
         )
+        
     else:
         context['books'] = Book.objects.all()
+    
+    for i in context['books']:
+        i.rating = BookRating.objects.filter(
+        book=i).aggregate(rating=Avg('rating'))['rating']
 
     return render(request, template_name, context=context)
 

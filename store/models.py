@@ -10,7 +10,7 @@ class Book(models.Model):
     genre = models.CharField(max_length=50)
     description = models.TextField(null=True)
     mrp = models.PositiveIntegerField()
-    rating = models.FloatField(default=None, null=True, validators=[
+    rating = models.FloatField(null=True,default=None, validators=[
                                MaxValueValidator(10), MinValueValidator(0)])
 
     class Meta:
