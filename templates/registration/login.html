@@ -2,19 +2,6 @@
 
 {% block content %}
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-{% if next %}
-{% if user.is_authenticated %}
-<p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-{% else %}
-<p>Please login to see this page.</p>
-{% endif %}
-{% endif %}
-
 <form action="{% url 'login' %}" method="POST">
     <h5 id="head" class=".small">Login Form</h5>
     <div class="illustration"><i class="icon ion-ios-locked-outline"></i></div>
@@ -22,16 +9,16 @@
     {% for field in form %}
     <div class="form-group">{{ field.label_tag }}
         {{ field }}
-        {% if field.help_text %}
     </div>
-
-    <small style="color: grey">{{ field.help_text }}</small>
-    {% endif %}
     {% for error in field.errors %}
     <p style="color: red">{{ error }}</p>
     {% endfor %}
     {% endfor %}
+    {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
     <div class="form-group"><input class="btn btn-primary btn-block" type="submit" value="Login"></div>
+
     <a class="forgot" href="{% url 'signup' %}">Create New Account</a>
 </form>
 

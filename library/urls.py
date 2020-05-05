@@ -17,10 +17,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from django.contrib.auth import views as auth_views
+
 
 urlpatterns = [
     path('', include('store.urls')),
     path('admin/', admin.site.urls),
+    # prevent user from going back to login page is logged
+    path('accounts/login/',
+         auth_views.LoginView.as_view(redirect_authenticated_user=True), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('authentication.urls'))
 ]+static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

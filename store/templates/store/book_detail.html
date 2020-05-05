@@ -20,7 +20,7 @@
 <button class="btn btn-primary" id="loan-button">Loan {{ book.title }}</button>
 {% if user.is_authenticated %}
 <form id="book" method="POST" action="{% url 'book-detail' book.pk %}">
-	{% csrf_token %}
+
 	<div class="form-group">
 		<label>Update Rating</label>
 		<input name="rating" type="number" min="0" max="10" value="{{user_review}}" required />
@@ -51,24 +51,5 @@
 
   	})
   })
-
-	// $("#book").on('submit', (e) => {
-	// 	e.preventDefault()
-	// 	console.log('kuch')
-	// 	$.ajax({
-	// 		url: {% url 'book-detail' book.pk %},
-	// 		method: "POST",
-	// 		data: {
-	// 		rating: document.querySelector('#rating').value
-	// 	},
-	// 		success: () => {
-	// 			window.location.reload()
-	// 		},
-	// 		error: function (xhr, status, err) {
-	// 			alert("Some error occured");
-	// 		}
-
-  	// 	})
-  	// })
 </script>
 {% endblock %}

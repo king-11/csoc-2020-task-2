@@ -15,6 +15,7 @@ def index(request):
     return render(request, 'store/index.html')
 
 
+@csrf_exempt
 def bookDetailView(request, bid):
     book = get_object_or_404(Book, pk=bid)
 
@@ -87,7 +88,7 @@ def loanBookView(request):
         'message': None,
     }
     bid = request.body.decode("utf-8").split("=")[1]
-    book = BookCopy.objects.get(book_id=bid, status=True)
+    book = BookCopy.objects.filter(book_id=bid, status=True)[0]
 
     if book:
         book.borrower = request.user
