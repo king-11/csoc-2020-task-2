@@ -3,6 +3,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from store.views import index
 from .forms import SignUpForm
+from django.contrib import auth
 # Create your views here.
 
 
@@ -27,3 +28,7 @@ def signup(request):
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
+
+def logout(request):
+    auth.logout(request)
+    return redirect('index')

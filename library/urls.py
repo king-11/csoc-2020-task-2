@@ -26,6 +26,6 @@ urlpatterns = [
     # prevent user from going back to login page is logged
     path('accounts/login/',
          auth_views.LoginView.as_view(redirect_authenticated_user=True), name='login'),
-    path('accounts/', include('django.contrib.auth.urls')),
+    #path('accounts/', include('django.contrib.auth.urls')),
     path('', include('authentication.urls'))
 ]+static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
