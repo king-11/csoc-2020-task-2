@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
 from store.models import *
 from django.contrib.auth.decorators import login_required
@@ -18,18 +18,8 @@ def index(request):
 @csrf_exempt
 def bookDetailView(request, bid):
     book = get_object_or_404(Book, pk=bid)
-
-    if request.method == "POST":
-        user = request.user
-        rating = request.POST['rating']
-        changeRating, create = BookRating.objects.get_or_create(
-            book=book, username=user)
-        changeRating.rating = rating
-        changeRating.save()
-
     book.rating = BookRating.objects.filter(
         book=book).aggregate(rating=Avg('rating'))['rating']
-
     book.save()
 
     context = {
@@ -49,6 +39,25 @@ def bookDetailView(request, bid):
     template_name = 'store/book_detail.html'
 
     return render(request, template_name, context=context)
+
+@csrf_exempt
+@login_required
+def book_rating(request, bid):
+    book = get_object_or_404(Book, pk=bid)
+
+    user = request.user
+    rating = request.POST['rating']
+    change_rating, create = BookRating.objects.get_or_create(
+        book=book, username=user)
+    change_rating.rating = rating
+    change_rating.save()
+
+    book.rating = BookRating.objects.filter(
+        book=book).aggregate(rating=Avg('rating'))['rating']
+    book.save()
+    
+    return redirect("book-detail", bid=bid)
+
 
 
 @csrf_exempt
@@ -92,7 +101,7 @@ def loanBookView(request):
     response_data = {
         'message': None,
     }
-    bid = request.body.decode("utf-8").split("=")[1]
+    bid = request.POST['bid']
     book = BookCopy.objects.filter(book_id=bid, status=True)[0]
 
     if book:
@@ -113,7 +122,7 @@ def returnBookView(request):
         'message': None,
     }
 
-    bid = request.body.decode("utf-8").split("=")[1]
+    bid = request.POST['bid']
     book = get_object_or_404(BookCopy, pk=bid)
 
     if book:

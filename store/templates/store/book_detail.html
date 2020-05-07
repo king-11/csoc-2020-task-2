@@ -20,7 +20,7 @@
 {% if user.is_authenticated %}
 <button class="btn btn-primary" id="loan-button">Loan {{ book.title }}</button>
 <div>
-	<form id="book" method="POST" action="{% url 'book-detail' book.pk %}" style="display: flex; justify-content: space-between; margin-top: 1rem;">
+	<form id="book" method="POST" action="{% url 'rate-book' book.pk %}" style="display: flex; justify-content: space-between; margin-top: 1rem;">
 		<button class="btn btn-primary" type="button" id="ratingButton">{% if user_review %} Update Rating {% else %} Rate It! {%endif%}</button>
 		<div class="form-group d-none">
 			<label>Update Rating</label>
