@@ -62,5 +62,14 @@ $("#search_button").click(function(){
     window.location.replace(final_url);
 });
 
+document.querySelectorAll('input').forEach((i) => {
+    i.addEventListener('keyup', (event) => {
+        if (event.keyCode === 13) {
+        event.preventDefault();
+        document.querySelector("#search_button").click();
+    }
+    })
+})
+
 </script>
 {% endblock %}
