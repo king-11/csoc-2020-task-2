@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
-from store.models import *
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Avg
 from django.core.exceptions import ObjectDoesNotExist
 
+from store.models import *
 # Create your views here.
 
 
@@ -40,6 +40,7 @@ def bookDetailView(request, bid):
 
     return render(request, template_name, context=context)
 
+
 @csrf_exempt
 @login_required
 def book_rating(request, bid):
@@ -55,9 +56,8 @@ def book_rating(request, bid):
     book.rating = BookRating.objects.filter(
         book=book).aggregate(rating=Avg('rating'))['rating']
     book.save()
-    
-    return redirect("book-detail", bid=bid)
 
+    return redirect("book-detail", bid=bid)
 
 
 @csrf_exempt
@@ -72,13 +72,13 @@ def bookListView(request):
         context['books'] = Book.objects.filter(
             title__icontains=get_data['title'], author__icontains=get_data['author'], genre__icontains=get_data['genre']
         )
-        
+
     else:
         context['books'] = Book.objects.all()
-    
+
     for i in context['books']:
         i.rating = BookRating.objects.filter(
-        book=i).aggregate(rating=Avg('rating'))['rating']
+            book=i).aggregate(rating=Avg('rating'))['rating']
 
     return render(request, template_name, context=context)
 
@@ -101,7 +101,11 @@ def loanBookView(request):
     response_data = {
         'message': None,
     }
-    bid = request.POST['bid']
+    try:
+        bid = request.POST['bid']
+    except ObjectDoesNotExist:
+        return HttpResponseBadRequest
+
     book = BookCopy.objects.filter(book_id=bid, status=True)[0]
 
     if book:
@@ -121,11 +125,14 @@ def returnBookView(request):
     response_data = {
         'message': None,
     }
+    try:
+        bid = request.POST['bid']
+    except ObjectDoesNotExist:
+        return HttpResponseBadRequest
 
-    bid = request.POST['bid']
     book = get_object_or_404(BookCopy, pk=bid)
 
-    if book:
+    if book and book.borrower == request.user:
         book.borrower = None
         book.borrow_date = None
         book.status = True
