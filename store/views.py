@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Avg
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.datastructures import MultiValueDictKeyError
 
 from store.models import *
 # Create your views here.
@@ -47,7 +48,14 @@ def book_rating(request, bid):
     book = get_object_or_404(Book, pk=bid)
 
     user = request.user
-    rating = request.POST['rating']
+    try:
+        rating = request.POST['rating']
+    except MultiValueDictKeyError:
+        return HttpResponseBadRequest(content="Invalid Data format")
+
+    if int(rating) > 10 or int(rating) < 0:
+        return HttpResponseBadRequest(content="Don't mess with frontend validation")
+
     change_rating, create = BookRating.objects.get_or_create(
         book=book, username=user)
     change_rating.rating = rating
@@ -103,8 +111,8 @@ def loanBookView(request):
     }
     try:
         bid = request.POST['bid']
-    except ObjectDoesNotExist:
-        return HttpResponseBadRequest
+    except MultiValueDictKeyError:
+        return HttpResponseBadRequest(content="Invalid Data format")
 
     book = BookCopy.objects.filter(book_id=bid, status=True)[0]
 
@@ -127,8 +135,8 @@ def returnBookView(request):
     }
     try:
         bid = request.POST['bid']
-    except ObjectDoesNotExist:
-        return HttpResponseBadRequest
+    except MultiValueDictKeyError:
+        return HttpResponseBadRequest(content="Invalid Data format")
 
     book = get_object_or_404(BookCopy, pk=bid)
 
